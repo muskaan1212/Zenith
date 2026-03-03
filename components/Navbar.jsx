@@ -12,6 +12,7 @@ const NAV = [
   { href: '/wellness', label: 'Wellness' },
   { href: '/feedback', label: 'Feedback' },
   { href: '/profile', label: 'Profile' },
+  { href: '/server-status', label: 'Server Status' },
 ]
 
 export default function Navbar() {

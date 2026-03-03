@@ -31,7 +31,24 @@ app.use('/feedback', feedbackRouter)
 
 // Health check
 app.get('/', (req, res) => {
-  res.json({ status: 'Zenith Healthcare API running', port: PORT })
+  res.json({ status: 'ok', message: 'Zenith Healthcare API running', port: PORT })
+})
+
+app.get('/health', (req, res) => {
+  const appointmentsData = JSON.parse(fs.readFileSync(path.join(__dirname, 'data/appointments.json'), 'utf-8'))
+  const feedbackData = JSON.parse(fs.readFileSync(path.join(__dirname, 'data/feedback.json'), 'utf-8'))
+  const recordsData = JSON.parse(fs.readFileSync(path.join(__dirname, 'data/records.json'), 'utf-8'))
+  res.json({
+    status: 'ok',
+    uptime: Math.floor(process.uptime()),
+    port: PORT,
+    timestamp: new Date().toISOString(),
+    routes: [
+      { path: '/appointments', method: 'GET, POST', records: appointmentsData.length },
+      { path: '/records',      method: 'GET, POST', records: recordsData.length },
+      { path: '/feedback',     method: 'GET, POST', records: feedbackData.length },
+    ],
+  })
 })
 
 // 404 handler
