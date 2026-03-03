@@ -1,1 +1,4 @@
-[]
+[
+  { "id": 1, "author": "Sarah Johnson", "type": "doctor", "rating": 5, "subject": "Excellent Service", "message": "Dr. Sharma provided exceptional care and was very attentive to my concerns.", "date": "2025-10-20", "createdAt": "2025-10-20T12:00:00.000Z" },
+  { "id": 2, "author": "Michael Chen", "type": "service", "rating": 4, "subject": "Good Experience", "message": "Overall a great experience. Waiting time could be slightly reduced.", "date": "2025-10-18", "createdAt": "2025-10-18T15:00:00.000Z" }
+]

@@ -1,14 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { Star, Plus, X } from 'lucide-react'
-
-const INIT = [
-  { id: 1, author: 'Sarah Johnson', type: 'doctor', rating: 5, subject: 'Excellent Service', message: 'Dr. Sharma provided exceptional care and was very attentive to my concerns.', date: '2025-10-20' },
-  { id: 2, author: 'Michael Chen', type: 'service', rating: 4, subject: 'Good Experience', message: 'Overall a great experience. Waiting time could be slightly reduced.', date: '2025-10-18' },
-]
+import { Star, Plus, X, Loader2 } from 'lucide-react'
+import { getFeedback, submitFeedback } from '@/lib/api'
 
 function Stars({ value, onChange }) {
   return (
@@ -25,17 +21,29 @@ function Stars({ value, onChange }) {
 const input = 'w-full px-3 py-2.5 border border-[var(--color-border)] rounded text-sm bg-white focus:outline-none focus:border-[var(--color-primary)] transition-colors'
 
 export default function FeedbackPage() {
-  const [list, setList] = useState(INIT)
+  const [list, setList] = useState([])
+  const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState({ type: '', rating: 0, subject: '', message: '' })
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }))
 
+  useEffect(() => {
+    getFeedback()
+      .then((data) => setList(data))
+      .catch(() => setList([]))
+      .finally(() => setLoading(false))
+  }, [])
+
   async function submit(e) {
     e.preventDefault()
     if (!form.type || !form.rating || !form.subject || !form.message) return
-    const fb = { id: Date.now(), author: 'You', ...form, date: new Date().toISOString().split('T')[0] }
-    try { await fetch('http://localhost:5000/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fb) }) } catch (_) {}
-    setList((p) => [fb, ...p])
+    try {
+      const res = await submitFeedback({ author: 'You', ...form })
+      setList((p) => [res.feedback, ...p])
+    } catch (_) {
+      const local = { id: Date.now(), author: 'You', ...form, date: new Date().toISOString().split('T')[0] }
+      setList((p) => [local, ...p])
+    }
     setForm({ type: '', rating: 0, subject: '', message: '' })
     setModal(false)
   }
@@ -54,9 +62,14 @@ export default function FeedbackPage() {
           </button>
         </div>
 
-        {list.length === 0
-          ? <p className="text-sm text-[var(--color-text-muted)] bg-white border border-[var(--color-border)] rounded-lg p-10 text-center">No feedback yet. Be the first to share!</p>
-          : <div className="space-y-3">
+        {loading ? (
+          <div className="flex items-center justify-center py-24 gap-3 text-[var(--color-text-muted)]">
+            <Loader2 size={18} className="animate-spin" /> Loading feedback...
+          </div>
+        ) : list.length === 0 ? (
+          <p className="text-sm text-[var(--color-text-muted)] bg-white border border-[var(--color-border)] rounded-lg p-10 text-center">No feedback yet. Be the first to share!</p>
+        ) : (
+          <div className="space-y-3">
             {list.map((fb) => (
               <div key={fb.id} className="bg-white border border-[var(--color-border)] rounded-lg p-6">
                 <div className="flex items-start justify-between gap-4 mb-3">
@@ -74,7 +87,7 @@ export default function FeedbackPage() {
               </div>
             ))}
           </div>
-        }
+        )}
       </main>
 
       {modal && (

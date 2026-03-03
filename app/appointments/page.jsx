@@ -1,21 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { Plus, X, Calendar, Clock, FileText } from 'lucide-react'
+import { Plus, X, Calendar, Clock, FileText, Loader2 } from 'lucide-react'
+import { getAppointments, createAppointment } from '@/lib/api'
 
-const INIT = [
-  { id: 1, doctor: 'Dr. A. Sharma', spec: 'Cardiology', date: '2025-10-28', time: '14:30', reason: 'Regular checkup' },
-  { id: 2, doctor: 'Dr. P. Gupta', spec: 'Neurology', date: '2025-11-05', time: '10:00', reason: 'Consultation' },
-  { id: 3, doctor: 'Dr. R. Mehta', spec: 'Orthopaedics', date: '2024-09-12', time: '11:00', reason: 'Follow-up' },
-]
 const DOCTORS = { 'Dr. A. Sharma': 'Cardiology', 'Dr. P. Gupta': 'Neurology', 'Dr. R. Mehta': 'Orthopaedics', 'Dr. S. Patel': 'Paediatrics' }
 
 const input = 'w-full px-3 py-2.5 border border-[var(--color-border)] rounded text-sm bg-white focus:outline-none focus:border-[var(--color-primary)] transition-colors'
 
 export default function AppointmentsPage() {
-  const [appts, setAppts] = useState(INIT)
+  const [appts, setAppts] = useState([])
+  const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState({ doctor: '', date: '', time: '', reason: '' })
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }))
@@ -23,11 +20,23 @@ export default function AppointmentsPage() {
   const upcoming = appts.filter((a) => new Date(a.date) >= now)
   const past = appts.filter((a) => new Date(a.date) < now)
 
+  useEffect(() => {
+    getAppointments()
+      .then((data) => setAppts(data))
+      .catch(() => setAppts([]))
+      .finally(() => setLoading(false))
+  }, [])
+
   async function book(e) {
     e.preventDefault()
-    const appt = { id: Date.now(), doctor: form.doctor, spec: DOCTORS[form.doctor] || 'General', date: form.date, time: form.time, reason: form.reason }
-    try { await fetch('http://localhost:5000/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(appt) }) } catch (_) {}
-    setAppts((p) => [appt, ...p])
+    const payload = { doctor: form.doctor, specialty: DOCTORS[form.doctor] || 'General', date: form.date, time: form.time, reason: form.reason }
+    try {
+      const res = await createAppointment(payload)
+      setAppts((p) => [res.appointment, ...p])
+    } catch (_) {
+      const local = { id: Date.now(), ...payload }
+      setAppts((p) => [local, ...p])
+    }
     setForm({ doctor: '', date: '', time: '', reason: '' })
     setModal(false)
     window.location.href = '/thank-you'
@@ -40,7 +49,7 @@ export default function AppointmentsPage() {
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
             <p className="font-semibold text-[var(--color-foreground)] text-sm">{a.doctor}</p>
-            <p className="text-xs text-[var(--color-primary)] font-semibold uppercase tracking-wide mt-0.5">{a.spec}</p>
+            <p className="text-xs text-[var(--color-primary)] font-semibold uppercase tracking-wide mt-0.5">{a.specialty || a.spec}</p>
           </div>
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${future ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'bg-[var(--color-surface-2)] text-[var(--color-text-muted)]'}`}>
             {future ? 'Upcoming' : 'Completed'}
@@ -86,8 +95,16 @@ export default function AppointmentsPage() {
             <Plus size={14} /> Book New
           </button>
         </div>
-        <Section title="Upcoming" list={upcoming} />
-        <Section title="Past" list={past} />
+        {loading ? (
+          <div className="flex items-center justify-center py-24 gap-3 text-[var(--color-text-muted)]">
+            <Loader2 size={18} className="animate-spin" /> Loading appointments...
+          </div>
+        ) : (
+          <>
+            <Section title="Upcoming" list={upcoming} />
+            <Section title="Past" list={past} />
+          </>
+        )}
       </main>
 
       {modal && (

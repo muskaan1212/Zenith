@@ -1,1 +1,5 @@
-[]
+[
+  { "id": 1, "doctor": "Dr. A. Sharma", "specialty": "Cardiology", "date": "2025-10-28", "time": "14:30", "reason": "Regular checkup", "createdAt": "2025-10-01T10:00:00.000Z" },
+  { "id": 2, "doctor": "Dr. P. Gupta", "specialty": "Neurology", "date": "2025-11-05", "time": "10:00", "reason": "Consultation", "createdAt": "2025-10-05T09:00:00.000Z" },
+  { "id": 3, "doctor": "Dr. R. Mehta", "specialty": "Orthopaedics", "date": "2024-09-12", "time": "11:00", "reason": "Follow-up", "createdAt": "2024-09-01T08:00:00.000Z" }
+]
