@@ -48,7 +48,6 @@ router.post('/', (req, res) => {
       createdAt: new Date().toISOString(),
     }
 
-    // Append new entry and save
     feedback.push(newFeedback)
     writeFeedback(feedback)
 

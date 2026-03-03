@@ -47,7 +47,6 @@ router.post('/', (req, res) => {
       createdAt: new Date().toISOString(),
     }
 
-    // Append to array and save
     appointments.push(newAppointment)
     writeAppointments(appointments)
 

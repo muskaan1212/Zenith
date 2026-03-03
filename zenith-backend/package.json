@@ -1,5 +1,5 @@
 {
-  "name": "zenith-server",
+  "name": "zenith-backend",
   "version": "1.0.0",
   "description": "Zenith Healthcare Express backend",
   "main": "app.js",

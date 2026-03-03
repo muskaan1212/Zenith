@@ -21,7 +21,7 @@ app.use((req, res, next) => {
   next()
 })
 
-// Serve static files from server/public
+// Serve static files from zenith-backend/public
 app.use(express.static(path.join(__dirname, 'public')))
 
 // Routes

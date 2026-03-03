@@ -61,7 +61,6 @@ router.post('/', upload.single('file'), (req, res) => {
       uploadedAt: new Date().toISOString(),
     }
 
-    // Append new record and persist
     records.push(newRecord)
     writeRecords(records)
 
@@ -71,11 +70,10 @@ router.post('/', upload.single('file'), (req, res) => {
   }
 })
 
-// GET /records/:filename — stream file to browser (demonstrates fs.createReadStream)
+// GET /records/:filename — stream file to browser
 router.get('/:filename', (req, res) => {
   const filePath = path.join(UPLOADS_DIR, req.params.filename)
 
-  // Check file exists
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'File not found' })
   }
@@ -84,7 +82,6 @@ router.get('/:filename', (req, res) => {
   res.setHeader('Content-Length', stat.size)
   res.setHeader('Content-Disposition', `attachment; filename="${req.params.filename}"`)
 
-  // Stream file to response — demonstrates file streaming concept
   const readStream = fs.createReadStream(filePath)
   readStream.pipe(res)
 })
