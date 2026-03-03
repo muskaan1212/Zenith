@@ -3,94 +3,72 @@
 import { useState } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { Plus, X, Calendar, Clock, User, FileText } from 'lucide-react'
+import { Plus, X, Calendar, Clock, FileText } from 'lucide-react'
 
-const initialAppointments = [
-  { id: 1, doctor: 'Dr. A. Sharma', specialty: 'Cardiology', date: '2025-10-28', time: '14:30', reason: 'Regular checkup' },
-  { id: 2, doctor: 'Dr. P. Gupta', specialty: 'Neurology', date: '2025-11-05', time: '10:00', reason: 'Consultation' },
-  { id: 3, doctor: 'Dr. R. Mehta', specialty: 'Orthopaedics', date: '2024-09-12', time: '11:00', reason: 'Follow-up' },
+const INIT = [
+  { id: 1, doctor: 'Dr. A. Sharma', spec: 'Cardiology', date: '2025-10-28', time: '14:30', reason: 'Regular checkup' },
+  { id: 2, doctor: 'Dr. P. Gupta', spec: 'Neurology', date: '2025-11-05', time: '10:00', reason: 'Consultation' },
+  { id: 3, doctor: 'Dr. R. Mehta', spec: 'Orthopaedics', date: '2024-09-12', time: '11:00', reason: 'Follow-up' },
 ]
+const DOCTORS = { 'Dr. A. Sharma': 'Cardiology', 'Dr. P. Gupta': 'Neurology', 'Dr. R. Mehta': 'Orthopaedics', 'Dr. S. Patel': 'Paediatrics' }
+
+const input = 'w-full px-3 py-2.5 border border-[var(--color-border)] rounded text-sm bg-white focus:outline-none focus:border-[var(--color-primary)] transition-colors'
 
 export default function AppointmentsPage() {
-  const [appointments, setAppointments] = useState(initialAppointments)
-  const [showModal, setShowModal] = useState(false)
+  const [appts, setAppts] = useState(INIT)
+  const [modal, setModal] = useState(false)
   const [form, setForm] = useState({ doctor: '', date: '', time: '', reason: '' })
-
+  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }))
   const now = new Date()
-  const upcoming = appointments.filter(a => new Date(a.date) >= now)
-  const past = appointments.filter(a => new Date(a.date) < now)
+  const upcoming = appts.filter((a) => new Date(a.date) >= now)
+  const past = appts.filter((a) => new Date(a.date) < now)
 
-  async function handleBook(e) {
+  async function book(e) {
     e.preventDefault()
-    if (!form.doctor || !form.date || !form.time) return
-
-    const doctorSpecialties = {
-      'Dr. A. Sharma': 'Cardiology',
-      'Dr. P. Gupta': 'Neurology',
-      'Dr. R. Mehta': 'Orthopaedics',
-      'Dr. S. Patel': 'Paediatrics',
-    }
-
-    const newAppt = {
-      id: Date.now(),
-      doctor: form.doctor,
-      specialty: doctorSpecialties[form.doctor] || 'General',
-      date: form.date,
-      time: form.time,
-      reason: form.reason,
-    }
-
-    try {
-      await fetch('http://localhost:5000/appointments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newAppt),
-      })
-    } catch (_) {
-      // Backend offline — use local state
-    }
-
-    setAppointments(prev => [newAppt, ...prev])
+    const appt = { id: Date.now(), doctor: form.doctor, spec: DOCTORS[form.doctor] || 'General', date: form.date, time: form.time, reason: form.reason }
+    try { await fetch('http://localhost:5000/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(appt) }) } catch (_) {}
+    setAppts((p) => [appt, ...p])
     setForm({ doctor: '', date: '', time: '', reason: '' })
-    setShowModal(false)
+    setModal(false)
     window.location.href = '/thank-you'
   }
 
-  function AppointmentCard({ appt }) {
-    const isUpcoming = new Date(appt.date) >= now
+  function Card({ a }) {
+    const future = new Date(a.date) >= now
     return (
-      <div className="bg-white border border-[var(--color-border)] rounded-xl p-5 hover:shadow-sm transition-shadow">
+      <div className="bg-white border border-[var(--color-border)] rounded-lg p-5 hover:shadow-sm transition-shadow">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
-            <p className="font-semibold text-[var(--color-foreground)]">{appt.doctor}</p>
-            <p className="text-xs text-[var(--color-primary)] font-semibold uppercase tracking-wide mt-0.5">{appt.specialty}</p>
+            <p className="font-semibold text-[var(--color-foreground)] text-sm">{a.doctor}</p>
+            <p className="text-xs text-[var(--color-primary)] font-semibold uppercase tracking-wide mt-0.5">{a.spec}</p>
           </div>
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${isUpcoming ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'bg-[var(--color-border)] text-[var(--color-text-muted)]'}`}>
-            {isUpcoming ? 'Upcoming' : 'Completed'}
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${future ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'bg-[var(--color-surface-2)] text-[var(--color-text-muted)]'}`}>
+            {future ? 'Upcoming' : 'Completed'}
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-4 text-sm">
-          <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-            <Calendar size={13} className="text-[var(--color-text-light)]" />
-            <span>{new Date(appt.date).toLocaleDateString()}</span>
-          </div>
-          <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-            <Clock size={13} className="text-[var(--color-text-light)]" />
-            <span>{appt.time}</span>
-          </div>
-          {appt.reason && (
-            <div className="flex items-center gap-2 text-[var(--color-text-secondary)] col-span-2">
-              <FileText size={13} className="text-[var(--color-text-light)]" />
-              <span>{appt.reason}</span>
-            </div>
-          )}
+        <div className="space-y-1.5 mb-4">
+          <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]"><Calendar size={12} className="text-[var(--color-text-light)]" />{new Date(a.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+          <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]"><Clock size={12} className="text-[var(--color-text-light)]" />{a.time}</div>
+          {a.reason && <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]"><FileText size={12} className="text-[var(--color-text-light)]" />{a.reason}</div>}
         </div>
-        {isUpcoming && (
+        {future && (
           <div className="flex gap-2">
-            <button className="flex-1 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md text-[var(--color-text-secondary)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors">Reschedule</button>
-            <button onClick={() => setAppointments(prev => prev.filter(a => a.id !== appt.id))} className="flex-1 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md text-[var(--color-text-secondary)] hover:border-[var(--color-error)] hover:text-[var(--color-error)] transition-colors">Cancel</button>
+            <button className="flex-1 py-1.5 text-xs border border-[var(--color-border)] rounded text-[var(--color-text-secondary)] hover:border-[var(--color-foreground)] transition-colors">Reschedule</button>
+            <button onClick={() => setAppts((p) => p.filter((x) => x.id !== a.id))} className="flex-1 py-1.5 text-xs border border-[var(--color-border)] rounded text-[var(--color-text-secondary)] hover:border-[var(--color-error)] hover:text-[var(--color-error)] transition-colors">Cancel</button>
           </div>
         )}
+      </div>
+    )
+  }
+
+  function Section({ title, list }) {
+    return (
+      <div className="mb-10">
+        <h2 className="font-serif text-xl font-medium text-[var(--color-foreground)] mb-4">{title} <span className="text-[var(--color-text-light)] font-sans font-normal text-sm">({list.length})</span></h2>
+        {list.length === 0
+          ? <p className="text-sm text-[var(--color-text-muted)] bg-white border border-[var(--color-border)] rounded-lg p-8 text-center">No appointments here.</p>
+          : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{list.map((a) => <Card key={a.id} a={a} />)}</div>
+        }
       </div>
     )
   }
@@ -98,81 +76,57 @@ export default function AppointmentsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-surface)]">
       <Navbar />
-      <main className="flex-1 max-w-6xl mx-auto w-full px-6 pt-24 pb-12">
-        <div className="flex items-center justify-between mb-8">
+      <main className="flex-1 max-w-6xl mx-auto w-full px-6 pt-20 pb-16">
+        <div className="py-8 border-b border-[var(--color-border)] mb-8 flex items-end justify-between gap-4">
           <div>
-            <h1 className="font-serif text-3xl font-medium text-[var(--color-foreground)]">Appointments</h1>
-            <p className="text-[var(--color-text-muted)] mt-1">Manage your upcoming and past consultations.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--color-primary)] mb-1">Schedule</p>
+            <h1 className="font-serif text-3xl md:text-4xl font-light text-[var(--color-foreground)]">Appointments</h1>
           </div>
-          <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] text-white text-sm font-semibold rounded-md hover:bg-[var(--color-primary-light)] transition-colors">
-            <Plus size={15} /> Book Appointment
+          <button onClick={() => setModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] text-white text-sm font-medium rounded hover:bg-[var(--color-primary-light)] transition-colors">
+            <Plus size={14} /> Book New
           </button>
         </div>
-
-        <div className="mb-10">
-          <h2 className="font-serif text-xl font-medium text-[var(--color-foreground)] mb-4">Upcoming ({upcoming.length})</h2>
-          {upcoming.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-muted)] bg-white border border-[var(--color-border)] rounded-xl p-8 text-center">No upcoming appointments. Book one now.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {upcoming.map(a => <AppointmentCard key={a.id} appt={a} />)}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <h2 className="font-serif text-xl font-medium text-[var(--color-foreground)] mb-4">Past ({past.length})</h2>
-          {past.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-muted)] bg-white border border-[var(--color-border)] rounded-xl p-8 text-center">No past appointments.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {past.map(a => <AppointmentCard key={a.id} appt={a} />)}
-            </div>
-          )}
-        </div>
+        <Section title="Upcoming" list={upcoming} />
+        <Section title="Past" list={past} />
       </main>
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl" onClick={e => e.stopPropagation()}>
+      {modal && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setModal(false)}>
+          <div className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-serif text-xl font-medium text-[var(--color-foreground)]">Book Appointment</h3>
-              <button onClick={() => setShowModal(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-foreground)] transition-colors"><X size={18} /></button>
+              <button onClick={() => setModal(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-foreground)] transition-colors"><X size={18} /></button>
             </div>
-            <form onSubmit={handleBook} className="space-y-4">
+            <form onSubmit={book} className="space-y-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Doctor *</label>
-                <select value={form.doctor} onChange={e => setForm(p => ({ ...p, doctor: e.target.value }))} required className="px-4 py-2.5 border border-[var(--color-border)] rounded-md text-sm focus:outline-none focus:border-[var(--color-primary)] bg-white">
+                <select value={form.doctor} onChange={set('doctor')} required className={input}>
                   <option value="">Select a doctor</option>
-                  <option>Dr. A. Sharma</option>
-                  <option>Dr. P. Gupta</option>
-                  <option>Dr. R. Mehta</option>
-                  <option>Dr. S. Patel</option>
+                  {Object.keys(DOCTORS).map((d) => <option key={d}>{d}</option>)}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Date *</label>
-                  <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} required min={new Date().toISOString().split('T')[0]} className="px-4 py-2.5 border border-[var(--color-border)] rounded-md text-sm focus:outline-none focus:border-[var(--color-primary)]" />
+                  <input type="date" value={form.date} onChange={set('date')} required min={new Date().toISOString().split('T')[0]} className={input} />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Time *</label>
-                  <input type="time" value={form.time} onChange={e => setForm(p => ({ ...p, time: e.target.value }))} required className="px-4 py-2.5 border border-[var(--color-border)] rounded-md text-sm focus:outline-none focus:border-[var(--color-primary)]" />
+                  <input type="time" value={form.time} onChange={set('time')} required className={input} />
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Reason</label>
-                <input value={form.reason} onChange={e => setForm(p => ({ ...p, reason: e.target.value }))} className="px-4 py-2.5 border border-[var(--color-border)] rounded-md text-sm focus:outline-none focus:border-[var(--color-primary)]" placeholder="Briefly describe your concern" />
+                <input value={form.reason} onChange={set('reason')} placeholder="Brief description" className={input} />
               </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2.5 border border-[var(--color-border)] text-sm font-medium text-[var(--color-text-secondary)] rounded-md hover:bg-[var(--color-surface)] transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2.5 bg-[var(--color-primary)] text-white text-sm font-semibold rounded-md hover:bg-[var(--color-primary-light)] transition-colors">Book</button>
+              <div className="flex gap-3 pt-1">
+                <button type="button" onClick={() => setModal(false)} className="flex-1 py-2.5 border border-[var(--color-border)] text-sm rounded text-[var(--color-text-secondary)] hover:border-[var(--color-foreground)] transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 bg-[var(--color-primary)] text-white text-sm font-medium rounded hover:bg-[var(--color-primary-light)] transition-colors">Book</button>
               </div>
             </form>
           </div>
         </div>
       )}
-
       <Footer />
     </div>
   )

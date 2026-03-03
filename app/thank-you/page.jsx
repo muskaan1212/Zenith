@@ -12,26 +12,22 @@ export default function ThankYouPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main
-        className="flex-1 flex items-center justify-center relative overflow-hidden"
-        style={{
-          background: 'linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.55)), url(/images/thank-you-bg.jpg) center/cover no-repeat fixed',
-        }}
-      >
-        <div className="relative z-10 max-w-md w-full mx-4 bg-white/95 backdrop-blur-sm rounded-2xl p-10 text-center shadow-2xl">
-          <div className="w-16 h-16 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center mx-auto mb-5">
-            <CheckCircle size={36} className="text-[var(--color-primary)]" />
+      <main className="flex-1 flex items-center justify-center px-6 py-24 bg-[var(--color-surface)]">
+        <div className="w-full max-w-md bg-white border border-[var(--color-border)] rounded-lg p-10 text-center shadow-sm">
+          <div className="w-14 h-14 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle size={28} className="text-[var(--color-primary)]" />
           </div>
-          <h1 className="font-serif text-3xl font-medium text-[var(--color-foreground)] mb-3">Thank you!</h1>
-          <p className="text-[var(--color-text-secondary)] leading-relaxed font-light mb-8">
-            Your appointment request has been received. Our care team will contact you within 24 hours to confirm your appointment and answer any questions.
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)] mb-3">Request Received</p>
+          <h1 className="font-serif text-3xl font-light text-[var(--color-foreground)] mb-4">Thank you!</h1>
+          <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mb-8 text-pretty">
+            Your appointment request has been received. Our care team will contact you within 24 hours to confirm and answer any questions.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/" className="px-6 py-2.5 bg-[var(--color-accent)] text-[var(--color-foreground)] font-semibold text-sm rounded-md hover:bg-[var(--color-accent-light)] transition-all hover:-translate-y-0.5">
+            <Link href="/" className="px-6 py-2.5 bg-[var(--color-primary)] text-white text-sm font-medium rounded hover:bg-[var(--color-primary-light)] transition-colors">
               Return Home
             </Link>
-            <Link href="/#contact" className="px-6 py-2.5 border border-[var(--color-border)] text-sm font-medium text-[var(--color-text-secondary)] rounded-md hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-all">
-              Schedule Another
+            <Link href="/appointments" className="px-6 py-2.5 border border-[var(--color-border)] text-sm text-[var(--color-text-secondary)] rounded hover:border-[var(--color-foreground)] transition-colors">
+              View Appointments
             </Link>
           </div>
         </div>

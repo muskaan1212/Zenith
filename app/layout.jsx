@@ -6,13 +6,12 @@ const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfa
 
 export const metadata = {
   title: 'Zenith Healthcare',
-  description: 'Your trusted health companion — manage appointments, prescriptions, wellness and more.',
+  description: 'Premium healthcare management — appointments, prescriptions, wellness and more.',
   keywords: 'healthcare, appointments, prescriptions, wellness, doctor',
 }
 
 export const viewport = {
   themeColor: '#2c5530',
-  userScalable: false,
 }
 
 export default function RootLayout({ children }) {
